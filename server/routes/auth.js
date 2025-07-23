@@ -11,7 +11,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'votre_secret_jwt_super_securise';
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
+  console.log('🔐 Tentative de connexion pour:', email);
+
   if (!email || !password) {
+    console.log('❌ Email ou mot de passe manquant');
     return res.status(400).json({ error: 'Email et mot de passe requis' });
   }
 
@@ -23,14 +26,22 @@ router.post('/login', async (req, res) => {
       WHERE u.email = ?
     `, [email]);
 
+    console.log('🔍 Utilisateurs trouvés:', users.length);
+
     if (users.length === 0) {
+      console.log('❌ Aucun utilisateur trouvé pour:', email);
       return res.status(401).json({ error: 'Identifiants invalides' });
     }
 
     const user = users[0];
+    console.log('👤 Utilisateur trouvé:', { id: user.id, email: user.email, role: user.role });
+    
     const isValidPassword = await bcrypt.compare(password, user.password);
     
+    console.log('🔑 Mot de passe valide:', isValidPassword);
+    
     if (!isValidPassword) {
+      console.log('❌ Mot de passe invalide pour:', email);
       return res.status(401).json({ error: 'Identifiants invalides' });
     }
 
@@ -43,6 +54,8 @@ router.post('/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '24h' }
     );
+
+    console.log('✅ Connexion réussie pour:', email);
 
     res.json({
       token,

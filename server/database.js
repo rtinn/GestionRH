@@ -91,22 +91,35 @@ export const initDatabase = async () => {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
-    // Créer l'utilisateur administrateur par défaut
+    // Créer l'utilisateur administrateur par défaut si il n'existe pas
     const adminEmail = 'admin@hr.com';
     const adminPassword = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'; // password: "admin123"
     
     const existingAdmin = await query('SELECT id FROM users WHERE email = ?', [adminEmail]);
     
     if (existingAdmin.length === 0) {
-      const adminResult = await query(
-        'INSERT INTO users (email, password, role) VALUES (?, ?, ?)',
-        [adminEmail, adminPassword, 'administrateur']
-      );
+      console.log('🔄 Création de l\'utilisateur administrateur par défaut...');
+      
+      try {
+        const adminResult = await query(
+          'INSERT INTO users (email, password, role) VALUES (?, ?, ?)',
+          [adminEmail, adminPassword, 'administrateur']
+        );
 
-      await query(
-        'INSERT INTO employees (user_id, first_name, last_name, position, department) VALUES (?, ?, ?, ?, ?)',
-        [adminResult.insertId, 'Admin', 'Système', 'Administrateur RH', 'Ressources Humaines']
-      );
+        console.log('✅ Utilisateur admin créé avec ID:', adminResult.insertId);
+
+        await query(
+          'INSERT INTO employees (user_id, first_name, last_name, position, department) VALUES (?, ?, ?, ?, ?)',
+          [adminResult.insertId, 'Admin', 'Système', 'Administrateur RH', 'Ressources Humaines']
+        );
+
+        console.log('✅ Profil employé admin créé');
+      } catch (adminError) {
+        console.error('❌ Erreur lors de la création de l\'admin:', adminError);
+        throw adminError;
+      }
+    } else {
+      console.log('✅ Utilisateur administrateur déjà existant');
     }
 
     console.log('✅ Base de données MySQL initialisée avec succès');
