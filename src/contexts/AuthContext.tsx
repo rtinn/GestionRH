@@ -19,7 +19,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const userData = await apiClient.getProfile();
           setUser(userData);
         } catch (error) {
+          console.error('Erreur lors de la récupération du profil:', error);
           localStorage.removeItem('hr_token');
+          setUser(null);
         }
       }
       setLoading(false);
@@ -34,6 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('hr_token', response.token);
       setUser(response.user);
     } catch (error) {
+      console.error('Erreur de connexion:', error);
       throw error;
     }
   };

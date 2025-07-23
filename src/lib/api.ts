@@ -6,10 +6,15 @@ const API_BASE_URL = 'http://localhost:3001/api';
 class ApiClient {
   private getHeaders() {
     const token = localStorage.getItem('hr_token');
-    return {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
     };
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return headers;
   }
 
   async request(endpoint: string, options: RequestInit = {}) {
@@ -19,10 +24,21 @@ class ApiClient {
       ...options,
     };
 
+    console.log('API Request:', {
+      url,
+      method: config.method || 'GET',
+      headers: config.headers,
+      hasToken: !!localStorage.getItem('hr_token')
+    });
     const response = await fetch(url, config);
     
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Erreur réseau' }));
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error
+      });
       throw new Error(error.error || `Erreur HTTP: ${response.status}`);
     }
 

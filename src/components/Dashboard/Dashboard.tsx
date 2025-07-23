@@ -10,6 +10,10 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { employees, loading } = useEmployees();
 
+  // Ne pas afficher les stats si pas d'utilisateur connecté
+  if (!user) {
+    return <div>Chargement...</div>;
+  }
   const stats = [
     {
       name: 'Total Employés',

@@ -3,20 +3,29 @@
 
 import { useState, useEffect } from 'react';
 import { apiClient } from '../lib/api';
+import { useAuth } from '../contexts/AuthContext';
 import type { Employee } from '../types';
 
 export const useEmployees = () => {
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEmployees = async () => {
+    // Ne pas charger les employés si l'utilisateur n'est pas connecté
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       const data = await apiClient.getEmployees();
       setEmployees(data);
     } catch (err) {
+      console.error('Erreur lors du chargement des employés:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
     } finally {
       setLoading(false);
@@ -24,8 +33,10 @@ export const useEmployees = () => {
   };
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    if (user) {
+      fetchEmployees();
+    }
+  }, [user]);
 
   const createEmployee = async (employeeData: any) => {
     try {

@@ -9,14 +9,22 @@ export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log('Auth middleware:', {
+    authHeader,
+    token: token ? 'Present' : 'Missing',
+    headers: req.headers
+  });
   if (!token) {
+    console.log('Token manquant');
     return res.status(401).json({ error: 'Token d\'accès requis' });
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
+      console.log('Token invalide:', err.message);
       return res.status(403).json({ error: 'Token invalide' });
     }
+    console.log('Token valide pour utilisateur:', user.email);
     req.user = user;
     next();
   });
