@@ -2,7 +2,6 @@
 // L'authentification JWT est indépendante de la base de données
 
 import jwt from 'jsonwebtoken';
-import { db } from '../database.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'votre_secret_jwt_super_securise';
 
